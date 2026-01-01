@@ -13,7 +13,7 @@ interface apb_if #(parameter int ADDR_W = 32,
   logic [ADDR_W-1:0]  PADDR;
   logic [DATA_W-1:0]  PWDATA;
   logic [DATA_W-1:0]  PRDATA;
-  l/* verilator lint_off UNOPTFLAT */
+  /* verilator lint_off UNOPTFLAT */
 logic PREADY;
 /* verilator lint_on UNOPTFLAT */
 
