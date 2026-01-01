@@ -9,3 +9,8 @@ AMBA APB3 slave RTL + verification: wait-state insertion (PREADY), error respons
 ## Run (Verilator)
 verilator --binary -j 0 -Wno-fatal -Itb -Irtl tb/tb_basic.sv tb/apb_if.sv rtl/apb_regs_dut.sv
 ./obj_dir/Vtb_basic
+
+## Sample output
+PASS: SCRATCH readback = deadbeef
+PASS: PSLVERR asserted for invalid address
+ALL DONE
