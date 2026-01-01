@@ -30,6 +30,10 @@ Invalid address: `PSLVERR` asserts only on completion (`PSEL && PENABLE && PREAD
 Wait states: during ACCESS, `PREADY` is 0 while `wait_cnt != 0`.
 
 ## Sample output
+
+~~~text
 PASS: SCRATCH readback = deadbeef
 PASS: PSLVERR asserted for invalid address
 ALL DONE
+~~~
+
