@@ -1,0 +1,26 @@
+name: CI (Verilator)
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verilator:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Install Verilator
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y verilator
+
+      - name: Build
+        run: |
+          verilator --version
+          verilator --binary -j 0 -Wno-fatal -Itb -Irtl tb/tb_basic.sv tb/apb_if.sv rtl/apb_regs_dut.sv
+
+      - name: Run
+        run: |
+          ./obj_dir/Vtb_basic
