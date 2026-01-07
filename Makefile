@@ -33,5 +33,8 @@ lint:
 clean:
 	rm -rf obj_dir
 
+.PHONY: cleanall
+cleanall: clean
+	rm -f *.vcd *.log
 
 
