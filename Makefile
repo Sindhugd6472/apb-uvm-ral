@@ -4,7 +4,7 @@ EXE         := ./obj_dir/V$(TOP)
 SIM_SOURCES := tb/tb_basic.sv tb/apb_if.sv rtl/apb_regs_dut.sv
 VERILATOR   := verilator
 
-.PHONY: help lint sim test clean cleanall
+.PHONY: help sim run test lint clean cleanall
 
 .DEFAULT_GOAL := help
 
