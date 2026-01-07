@@ -1,3 +1,10 @@
 obj_dir/
-.DS_Store
+Vtb_basic*
+*.o
+*.a
+*.d
+*.mk
+*.vcd
+*.fst
+
 .DS_Store
