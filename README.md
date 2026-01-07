@@ -1,7 +1,25 @@
-[![CI (Verilator)](https://github.com/Sindhugd6472/apb-uvm-ral/actions/workflows/ci.yml/badge.svg)](https://github.com/Sindhugd6472/apb-uvm-ral/actions/workflows/ci.yml)
+[![CI (Verilator)](https://github.com/Sindhugd6472/apb-uvm-ral/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Sindhugd6472/apb-uvm-ral/actions/workflows/ci.yml)
+
 # apb-uvm-ral
 
 AMBA APB3 slave RTL + verification: wait-state insertion (PREADY), error response (PSLVERR), and self-checking SystemVerilog tests running on Verilator.
+
+## Quickstart (Makefile)
+
+Build:
+~~~
+make sim
+~~~
+
+Run basic SV test:
+~~~
+make run
+~~~
+Run UVM test:
+~~~
+make test
+~~~
+
 
 ## What’s inside
 - `rtl/`: APB3 slave + register block
