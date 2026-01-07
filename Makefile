@@ -1,4 +1,7 @@
 # Simple Verilator runner for this repo
+
+.DEFAULT_GOAL := help
+
 TOP         := tb_basic
 EXE         := ./obj_dir/V$(TOP)
 SIM_SOURCES := tb/tb_basic.sv tb/apb_if.sv rtl/apb_regs_dut.sv
