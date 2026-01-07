@@ -4,7 +4,7 @@ import uvm_pkg::*;
 class apb_driver extends uvm_driver #(apb_item);
   `uvm_component_utils(apb_driver)
 
-  virtual apb_if vif;
+  string bfm_path;
 
   function new(string name="apb_driver", uvm_component parent=null);
     super.new(name, parent);
@@ -12,55 +12,45 @@ class apb_driver extends uvm_driver #(apb_item);
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (!uvm_config_db#(virtual apb_if)::get(this, "", "vif", vif)) begin
-      `uvm_fatal("NO_VIF", "No virtual interface 'vif' found in uvm_config_db")
+    if (!uvm_config_db#(string)::get(this, "", "bfm_path", bfm_path)) begin
+      `uvm_fatal("NOBFM", "bfm_path not set in config_db")
     end
   endfunction
 
   task run_phase(uvm_phase phase);
     apb_item req;
+    apb_item rsp;
+    logic [31:0] rdata;
 
-    // Drive defaults
-    vif.PSEL    <= 0;
-    vif.PENABLE <= 0;
-    vif.PWRITE  <= 0;
-    vif.PADDR   <= '0;
-    vif.PWDATA  <= '0;
-
-    // Wait for reset deassert
-    wait (vif.PRESETn == 1);
+    // init + wait reset
+    $root.tb_uvm_top.bfm.init_master();
+    $root.tb_uvm_top.bfm.wait_reset_release();
 
     forever begin
       seq_item_port.get_next_item(req);
 
-      // SETUP
-      @(posedge vif.PCLK);
-      vif.PSEL    <= 1;
-      vif.PENABLE <= 0;
-      vif.PWRITE  <= req.write;
-      vif.PADDR   <= req.addr;
-      vif.PWDATA  <= req.wdata;
+      // Build response and echo request fields
+      rsp = apb_item::type_id::create("rsp");
+      rsp.write  = req.write;
+      rsp.addr   = req.addr;
+      rsp.wdata  = req.wdata;
+      rsp.rdata  = 32'h0;
+      rsp.slverr = 1'b0;
 
-      // ACCESS
-      @(posedge vif.PCLK);
-      vif.PENABLE <= 1;
+      if (req.write) begin
+        $root.tb_uvm_top.bfm.apb_write(req.addr, req.wdata);
+      end else begin
+        $root.tb_uvm_top.bfm.apb_read(req.addr, rdata);
+        rsp.rdata = rdata;
+      end
 
-      // Wait-state support
-      while (!(vif.PSEL && vif.PENABLE && vif.PREADY)) @(posedge vif.PCLK);
+      // IMPORTANT: tag response with the request's IDs so get_response() works
+      rsp.set_id_info(req);  // required to avoid "null sequence_id" [web:700]
 
-      // Sample response at completion
-      req.rdata  = vif.PRDATA;
-      req.slverr = vif.PSLVERR;
-
-      // IDLE
-      @(posedge vif.PCLK);
-      vif.PSEL    <= 0;
-      vif.PENABLE <= 0;
-      vif.PWRITE  <= 0;
-      vif.PADDR   <= '0;
-      vif.PWDATA  <= '0;
-
-      seq_item_port.item_done();
+      // Complete handshake and deliver response
+      seq_item_port.item_done(rsp);
     end
   endtask
-endclass
+
+endclass : apb_driver
+

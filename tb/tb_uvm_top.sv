@@ -1,37 +1,44 @@
-`timescale 1ns/1ps
-
 module tb_uvm_top;
+  timeunit 1ns;
+  timeprecision 1ps;
 
   import uvm_pkg::*;
   `include "uvm_macros.svh"
 
-  apb_if apb();
-
-  apb_regs_dut dut(.apb(apb));
+  apb_if apb_vif();
 
   // Clock
   initial begin
-    apb.PCLK = 0;
-    forever #5 apb.PCLK = ~apb.PCLK;
+    apb_vif.PCLK = 0;
+    forever #5 apb_vif.PCLK = ~apb_vif.PCLK;
   end
 
-  // Reset + default drives (same intent as your tb_basic)
+  // Reset
   initial begin
-    apb.PRESETn = 0;
-    apb.PSEL    = 0;
-    apb.PENABLE = 0;
-    apb.PWRITE  = 0;
-    apb.PADDR   = '0;
-    apb.PWDATA  = '0;
-
-    repeat (5) @(posedge apb.PCLK);
-    apb.PRESETn = 1;
+    apb_vif.PRESETn = 0;
+    repeat (5) @(posedge apb_vif.PCLK);
+    apb_vif.PRESETn = 1;
   end
 
-  // Give the interface handle to UVM (so driver/monitor can "get" it)
+  // DUT (expects apb_if.slave apb)
+  apb_regs_dut dut (
+    .apb(apb_vif)
+  );
+
+  // Task-based BFM (no virtual interface)
+  apb_bfm bfm (
+    .apb(apb_vif)
+  );
+
+  // Start UVM
   initial begin
-    uvm_config_db#(virtual apb_if)::set(null, "*", "vif", apb);
-    run_test("reg_smoke_test");
+    // Provide BFM hierarchical path to components (if you use it)
+    uvm_config_db#(string)::set(null, "*", "bfm_path", "$root.tb_uvm_top.bfm");
+
+    // IMPORTANT: make UVM call $finish when the test completes
+    uvm_root::get().finish_on_completion = 1;  // ends sim cleanly [web:581]
+
+    run_test(); // uses +UVM_TESTNAME=... if provided
   end
 
 endmodule
