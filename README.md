@@ -1,4 +1,4 @@
-[![CI (Verilator)](https://github.com/Sindhugd6472/apb-uvm-ral/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Sindhugd6472/apb-uvm-ral/actions/workflows/ci.yml)
+[![CI (Verilator)](https://github.com/Sindhugd6472/apb-uvm-ral/actions/workflows/ci.yml/badge.svg)](https://github.com/Sindhugd6472/apb-uvm-ral/actions/workflows/ci.yml)
 CI runs on GitHub Actions using Verilator (see Actions tab for logs).
 
 # apb-uvm-ral
