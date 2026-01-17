@@ -12,23 +12,54 @@ class reg_smoke_test extends uvm_test;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    
+    // Enable coverage before creating environment
+    uvm_reg::include_coverage("*", UVM_CVR_FIELD_VALS);
+    
     env = apb_env::type_id::create("env", this);
   endfunction
 
- task run_phase(uvm_phase phase);
-  apb_smoke_seq seq;
+  task run_phase(uvm_phase phase);
+    uvm_status_e status;
+    uvm_reg_data_t wdata, rdata;
 
-  phase.raise_objection(this);
+    phase.raise_objection(this);
+    
+    `uvm_info("RAL_TEST", "Starting register smoke test", UVM_MEDIUM)
 
-  seq = apb_smoke_seq::type_id::create("seq");
-  seq.start(env.agent.seqr);
+    // Test 1: Basic write/read
+    wdata = 32'hDEAD_BEEF;
+    `uvm_info("RAL_TEST", $sformatf("Writing SCRATCH: 0x%0h", wdata), UVM_MEDIUM)
+    env.reg_model.SCRATCH.write(status, wdata);
+    env.reg_model.SCRATCH.read(status, rdata);
 
-phase.drop_objection(this);
+    if (rdata !== wdata) begin
+      `uvm_error("RAL_SMOKE", $sformatf("SCRATCH mismatch: wrote=0x%0h read=0x%0h", wdata, rdata))
+    end else begin
+      `uvm_info("RAL_SMOKE", $sformatf("SCRATCH readback OK: 0x%0h", rdata), UVM_LOW)
+    end
+    
+    // Test 2: All zeros
+    wdata = 32'h0000_0000;
+    env.reg_model.SCRATCH.write(status, wdata);
+    env.reg_model.SCRATCH.read(status, rdata);
+    `uvm_info("RAL_TEST", $sformatf("All zeros test: 0x%0h", rdata), UVM_MEDIUM)
+    
+    // Test 3: All ones
+    wdata = 32'hFFFF_FFFF;
+    env.reg_model.SCRATCH.write(status, wdata);
+    env.reg_model.SCRATCH.read(status, rdata);
+    `uvm_info("RAL_TEST", $sformatf("All ones test: 0x%0h", rdata), UVM_MEDIUM)
+    
+    // Test 4: Pattern test
+    wdata = 32'hA5A5_A5A5;
+    env.reg_model.SCRATCH.write(status, wdata);
+    env.reg_model.SCRATCH.read(status, rdata);
+    `uvm_info("RAL_TEST", $sformatf("Pattern test: 0x%0h", rdata), UVM_MEDIUM)
 
-`uvm_info("EOT", "About to call $finish", UVM_LOW)
-#1;
-$finish;
+    `uvm_info("RAL_TEST", "Register smoke test completed", UVM_LOW)
+    
+    phase.drop_objection(this);
+  endtask
 
-endtask
-  endclass
-
+endclass
