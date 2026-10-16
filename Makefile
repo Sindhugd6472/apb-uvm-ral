@@ -16,7 +16,7 @@ help:
 	@echo "Targets:"
 	@echo "  make sim    - Build Verilator binary"
 	@echo "  make run    - Run basic SV test"
-	@echo "  make test   - Run UVM reg_smoke_test"
+	@echo "  make test   - Run self-checking RTL smoke test"
 	@echo "  make lint   - Verilator lint-only (no build)"
 	@echo "  make clean  - Remove build artifacts"
 
@@ -29,7 +29,7 @@ run: sim
 	$(EXE)
 
 test: sim
-	$(EXE) +UVM_TESTNAME=reg_smoke_test
+	$(EXE)
 
 # --lint-only lints without generating output files
 lint:
@@ -43,3 +43,12 @@ cleanall: clean
 	rm -f *.vcd *.log
 
 
+
+# Commercial simulator UVM path is separate from the RTL-only smoke target.
+UVM_HOME ?=
+.PHONY: uvm-test
+uvm-test:
+	@test -f "$(UVM_HOME)/src/uvm_pkg.sv" || (echo "Set UVM_HOME to UVM sources"; exit 1)
+	vlib work
+	vlog -sv +incdir+. +incdir+$(UVM_HOME)/src $(UVM_HOME)/src/uvm_pkg.sv tb/apb_if.sv rtl/apb_regs_dut.sv tb/apb_bfm.sv tb/apb_uvm_pkg.sv tb/tb_uvm_top.sv
+	vsim -c tb_uvm_top +UVM_TESTNAME=reg_smoke_test -do "run -all; quit -f"

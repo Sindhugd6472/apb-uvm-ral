@@ -28,12 +28,13 @@ endfunction
   // Slave response
   always_comb begin
     // PSLVERR only meaningful on the completion cycle (PSEL&PENABLE&PREADY)
-apb.PSLVERR = (apb.PSEL && apb.PENABLE && apb.PREADY && !is_valid_addr(apb.PADDR));
+
 
 
     // During ACCESS: ready only when wait_cnt==0
     if (apb.PSEL && apb.PENABLE) apb.PREADY = (wait_cnt == 2'd0);
     else                         apb.PREADY = 1'b1;
+    apb.PSLVERR = (apb.PSEL && apb.PENABLE && apb.PREADY && !is_valid_addr(apb.PADDR));
 
     // Read mux
     unique case (apb.PADDR)

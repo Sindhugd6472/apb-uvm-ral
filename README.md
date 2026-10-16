@@ -64,3 +64,9 @@ PASS: PSLVERR asserted for invalid address
 ALL DONE
 ~~~
 
+
+## Validation targets
+
+`make test` runs the self-checking RTL smoke test, including SCRATCH readback and invalid-address PSLVERR captured at transfer completion. Failure and timeout paths use `$fatal` so CI receives a failing exit status.
+
+`make uvm-test UVM_HOME=/path/to/uvm` is a separate Questa target. Its package includes the RAL model, adapter and components; the environment builds the model and connects its default map to the bus sequencer. The model currently covers SCRATCH only. The open-source RTL CI does not establish full UVM/RAL signoff.
