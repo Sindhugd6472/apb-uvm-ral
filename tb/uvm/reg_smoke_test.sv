@@ -32,6 +32,8 @@ class reg_smoke_test extends uvm_test;
     `uvm_info("RAL_TEST", $sformatf("Writing SCRATCH: 0x%0h", wdata), UVM_MEDIUM)
     env.reg_model.SCRATCH.write(status, wdata);
     env.reg_model.SCRATCH.read(status, rdata);
+    if (status != UVM_IS_OK || rdata !== wdata)
+      `uvm_error("RAL_SMOKE", "Register read status/data mismatch")
 
     if (rdata !== wdata) begin
       `uvm_error("RAL_SMOKE", $sformatf("SCRATCH mismatch: wrote=0x%0h read=0x%0h", wdata, rdata))
@@ -43,18 +45,24 @@ class reg_smoke_test extends uvm_test;
     wdata = 32'h0000_0000;
     env.reg_model.SCRATCH.write(status, wdata);
     env.reg_model.SCRATCH.read(status, rdata);
+    if (status != UVM_IS_OK || rdata !== wdata)
+      `uvm_error("RAL_SMOKE", "Register read status/data mismatch")
     `uvm_info("RAL_TEST", $sformatf("All zeros test: 0x%0h", rdata), UVM_MEDIUM)
     
     // Test 3: All ones
     wdata = 32'hFFFF_FFFF;
     env.reg_model.SCRATCH.write(status, wdata);
     env.reg_model.SCRATCH.read(status, rdata);
+    if (status != UVM_IS_OK || rdata !== wdata)
+      `uvm_error("RAL_SMOKE", "Register read status/data mismatch")
     `uvm_info("RAL_TEST", $sformatf("All ones test: 0x%0h", rdata), UVM_MEDIUM)
     
     // Test 4: Pattern test
     wdata = 32'hA5A5_A5A5;
     env.reg_model.SCRATCH.write(status, wdata);
     env.reg_model.SCRATCH.read(status, rdata);
+    if (status != UVM_IS_OK || rdata !== wdata)
+      `uvm_error("RAL_SMOKE", "Register read status/data mismatch")
     `uvm_info("RAL_TEST", $sformatf("Pattern test: 0x%0h", rdata), UVM_MEDIUM)
 
     `uvm_info("RAL_TEST", "Register smoke test completed", UVM_LOW)

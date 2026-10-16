@@ -15,14 +15,14 @@ class apb_scratch_reg extends uvm_reg;
 
   function new(string name="apb_scratch_reg");
     super.new(name, 32, UVM_CVR_FIELD_VALS);
+    value_cg = new();
   endfunction
 
   virtual function void build();
     scratch = uvm_reg_field::type_id::create("scratch");
     scratch.configure(this, 32, 0, "RW", 0, 32'h0, 1, 1, 0);
     
-    if (has_coverage(UVM_CVR_FIELD_VALS))
-      value_cg = new();
+
   endfunction
   
   virtual function void sample_values();

@@ -3,6 +3,7 @@ module tb_uvm_top;
   timeprecision 1ps;
 
   import uvm_pkg::*;
+  import apb_uvm_pkg::*;
   `include "uvm_macros.svh"
 
   apb_if apb_vif();
@@ -17,6 +18,7 @@ module tb_uvm_top;
   initial begin
     apb_vif.PRESETn = 0;
     repeat (5) @(posedge apb_vif.PCLK);
+    @(negedge apb_vif.PCLK);
     apb_vif.PRESETn = 1;
   end
 
@@ -41,4 +43,5 @@ module tb_uvm_top;
     run_test(); // uses +UVM_TESTNAME=... if provided
   end
 
+  initial begin #1000000; $fatal(1, "UVM timeout"); end
 endmodule

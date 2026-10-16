@@ -1,7 +1,8 @@
 // rtl/apb_regs_dut.sv
 module apb_regs_dut #(
   parameter int ADDR_W = 32,
-  parameter int DATA_W = 32
+  parameter int DATA_W = 32,
+  parameter int WAIT_CYCLES = 0
 )(
   apb_if.slave apb
 );
@@ -15,6 +16,9 @@ module apb_regs_dut #(
 
   logic [DATA_W-1:0] ctrl, status, cfg, intr_status, intr_enable, scratch;
 
+  initial begin
+    if (WAIT_CYCLES < 0 || WAIT_CYCLES > 3) $fatal(1, "WAIT_CYCLES must be 0..3");
+  end
   // Wait-state counter (0..3 wait cycles)
   logic [1:0] wait_cnt;
 
@@ -28,12 +32,13 @@ endfunction
   // Slave response
   always_comb begin
     // PSLVERR only meaningful on the completion cycle (PSEL&PENABLE&PREADY)
-apb.PSLVERR = (apb.PSEL && apb.PENABLE && apb.PREADY && !is_valid_addr(apb.PADDR));
+
 
 
     // During ACCESS: ready only when wait_cnt==0
     if (apb.PSEL && apb.PENABLE) apb.PREADY = (wait_cnt == 2'd0);
     else                         apb.PREADY = 1'b1;
+    apb.PSLVERR = (apb.PSEL && apb.PENABLE && apb.PREADY && !is_valid_addr(apb.PADDR));
 
     // Read mux
     unique case (apb.PADDR)
@@ -53,7 +58,7 @@ apb.PSLVERR = (apb.PSEL && apb.PENABLE && apb.PREADY && !is_valid_addr(apb.PADDR
       wait_cnt <= 2'd0;
     end else if (apb.PSEL && !apb.PENABLE) begin
       // Load wait count at SETUP
-      wait_cnt <= 2'd0;
+      wait_cnt <= 2'(WAIT_CYCLES);
     end else if (apb.PSEL && apb.PENABLE && wait_cnt != 2'd0) begin
       // Count down during ACCESS
       wait_cnt <= wait_cnt - 2'd1;

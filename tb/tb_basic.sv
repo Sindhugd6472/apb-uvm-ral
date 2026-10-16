@@ -1,8 +1,10 @@
 `timescale 1ns/1ps
 module tb_basic;
+  parameter WAIT_CYCLES = 0;
 
+  logic last_slverr;
   apb_if apb();
-  apb_regs_dut dut(.apb(apb));
+  apb_regs_dut #(.WAIT_CYCLES(WAIT_CYCLES)) dut(.apb(apb));
 
   initial begin
     apb.PCLK = 0;
@@ -17,25 +19,27 @@ module tb_basic;
     apb.PADDR   = '0;
     apb.PWDATA  = '0;
     repeat (5) @(posedge apb.PCLK);
+    @(negedge apb.PCLK);
     apb.PRESETn = 1;
     repeat (2) @(posedge apb.PCLK);
   endtask
 
   task automatic apb_write(input logic [31:0] addr, input logic [31:0] data);
-    @(posedge apb.PCLK);
+    @(negedge apb.PCLK);
     apb.PSEL    = 1;
     apb.PENABLE = 0;
     apb.PWRITE  = 1;
     apb.PADDR   = addr;
     apb.PWDATA  = data;
 
-    @(posedge apb.PCLK);
+    @(negedge apb.PCLK);
     apb.PENABLE = 1;
 
     // Hold stable until completion
-    while (!(apb.PSEL && apb.PENABLE && apb.PREADY)) @(posedge apb.PCLK);
+    do @(posedge apb.PCLK); while (!apb.PREADY);
+    last_slverr = apb.PSLVERR;
 
-    @(posedge apb.PCLK);
+    @(negedge apb.PCLK);
     apb.PSEL    = 0;
     apb.PENABLE = 0;
     apb.PWRITE  = 0;
@@ -44,21 +48,22 @@ module tb_basic;
   endtask
 
   task automatic apb_read(input logic [31:0] addr, output logic [31:0] data);
-    @(posedge apb.PCLK);
+    @(negedge apb.PCLK);
     apb.PSEL    = 1;
     apb.PENABLE = 0;
     apb.PWRITE  = 0;
     apb.PADDR   = addr;
     apb.PWDATA  = '0;
 
-    @(posedge apb.PCLK);
+    @(negedge apb.PCLK);
     apb.PENABLE = 1;
 
-    while (!(apb.PSEL && apb.PENABLE && apb.PREADY)) @(posedge apb.PCLK);
+    do @(posedge apb.PCLK); while (!apb.PREADY);
+    last_slverr = apb.PSLVERR;
 
     data = apb.PRDATA;
 
-    @(posedge apb.PCLK);
+    @(negedge apb.PCLK);
     apb.PSEL    = 0;
     apb.PENABLE = 0;
     apb.PADDR   = '0;
@@ -73,15 +78,15 @@ module tb_basic;
 
     if (rdata !== 32'hDEADBEEF) begin
       $display("FAIL: SCRATCH readback got %h expected %h", rdata, 32'hDEADBEEF);
-      $finish;
+      $fatal(1, "APB readback failed");
     end else begin
       $display("PASS: SCRATCH readback = %h", rdata);
     end
    // Negative test: invalid address should raise PSLVERR on completion
 apb_read(32'h100, rdata);
-if (apb.PSLVERR !== 1'b1) begin
+if (last_slverr !== 1'b1) begin
   $display("FAIL: Expected PSLVERR=1 for invalid address");
-  $finish;
+  $fatal(1, "APB error response failed");
 end else begin
   $display("PASS: PSLVERR asserted for invalid address");
 end
@@ -90,4 +95,5 @@ end
     $finish;
   end
 
+  initial begin #100000; $fatal(1, "APB timeout"); end
 endmodule

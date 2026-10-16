@@ -44,6 +44,8 @@ class apb_driver extends uvm_driver #(apb_item);
         rsp.rdata = rdata;
       end
 
+      rsp.slverr = $root.tb_uvm_top.bfm.last_slverr;
+
       // IMPORTANT: tag response with the request's IDs so get_response() works
       rsp.set_id_info(req);  // required to avoid "null sequence_id" [web:700]
 

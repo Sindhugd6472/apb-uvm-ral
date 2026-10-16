@@ -5,6 +5,8 @@ module apb_bfm #(parameter int ADDR_W = 32,
   apb_if.master apb
 );
 
+  logic last_slverr;
+
   task automatic init_master();
     apb.PSEL    = 0;
     apb.PENABLE = 0;
@@ -22,48 +24,50 @@ module apb_bfm #(parameter int ADDR_W = 32,
   task automatic apb_write(input logic [ADDR_W-1:0] addr,
                            input logic [DATA_W-1:0] data);
     // SETUP phase
-    @(posedge apb.PCLK);
-    apb.PSEL    <= 1'b1;
-    apb.PENABLE <= 1'b0;
-    apb.PWRITE  <= 1'b1;
-    apb.PADDR   <= addr;
-    apb.PWDATA  <= data;
+    @(negedge apb.PCLK);
+    apb.PSEL    = 1'b1;
+    apb.PENABLE = 1'b0;
+    apb.PWRITE  = 1'b1;
+    apb.PADDR   = addr;
+    apb.PWDATA  = data;
 
     // ACCESS phase
-    @(posedge apb.PCLK);
-    apb.PENABLE <= 1'b1;
+    @(negedge apb.PCLK);
+    apb.PENABLE = 1'b1;
 
     // Wait for ready
-    while (apb.PREADY !== 1'b1) @(posedge apb.PCLK);
+    do @(posedge apb.PCLK); while (apb.PREADY !== 1'b1);
+    last_slverr = apb.PSLVERR;
 
     // Complete
-    @(posedge apb.PCLK);
-    apb.PSEL    <= 1'b0;
-    apb.PENABLE <= 1'b0;
-    apb.PWRITE  <= 1'b0;
+    @(negedge apb.PCLK);
+    apb.PSEL    = 1'b0;
+    apb.PENABLE = 1'b0;
+    apb.PWRITE  = 1'b0;
   endtask
 
   task automatic apb_read(input  logic [ADDR_W-1:0] addr,
                           output logic [DATA_W-1:0] data);
     // SETUP phase
-    @(posedge apb.PCLK);
-    apb.PSEL    <= 1'b1;
-    apb.PENABLE <= 1'b0;
-    apb.PWRITE  <= 1'b0;
-    apb.PADDR   <= addr;
+    @(negedge apb.PCLK);
+    apb.PSEL    = 1'b1;
+    apb.PENABLE = 1'b0;
+    apb.PWRITE  = 1'b0;
+    apb.PADDR   = addr;
 
     // ACCESS phase
-    @(posedge apb.PCLK);
-    apb.PENABLE <= 1'b1;
+    @(negedge apb.PCLK);
+    apb.PENABLE = 1'b1;
 
-    while (apb.PREADY !== 1'b1) @(posedge apb.PCLK);
+    do @(posedge apb.PCLK); while (apb.PREADY !== 1'b1);
+    last_slverr = apb.PSLVERR;
 
     data = apb.PRDATA;
 
     // Complete
-    @(posedge apb.PCLK);
-    apb.PSEL    <= 1'b0;
-    apb.PENABLE <= 1'b0;
+    @(negedge apb.PCLK);
+    apb.PSEL    = 1'b0;
+    apb.PENABLE = 1'b0;
   endtask
 
 endmodule
