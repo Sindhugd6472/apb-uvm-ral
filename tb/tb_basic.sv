@@ -1,9 +1,10 @@
 `timescale 1ns/1ps
 module tb_basic;
+  parameter WAIT_CYCLES = 0;
 
   logic last_slverr;
   apb_if apb();
-  apb_regs_dut dut(.apb(apb));
+  apb_regs_dut #(.WAIT_CYCLES(WAIT_CYCLES)) dut(.apb(apb));
 
   initial begin
     apb.PCLK = 0;

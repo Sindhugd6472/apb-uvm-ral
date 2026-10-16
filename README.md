@@ -20,7 +20,7 @@ Run basic SV test:
 ~~~
 make run
 ~~~
-Run UVM test:
+Run the same RTL smoke as a test target:
 ~~~
 make test
 ~~~
@@ -54,7 +54,7 @@ verilator --binary -j 0 -Wno-fatal -Itb -Irtl tb/tb_basic.sv tb/apb_if.sv rtl/ap
 | 0x14  | SCRATCH         | R/W    | 0x00000000 | Test writes/reads `0xDEADBEEF`. |
 
 Invalid address: `PSLVERR` asserts only on completion (`PSEL && PENABLE && PREADY`).  
-Wait states: during ACCESS, `PREADY` is 0 while `wait_cnt != 0`.
+Wait states: set DUT parameter `WAIT_CYCLES` to 0..3 (default 0). CI checks 0, 1 and 3. During ACCESS, `PREADY` is 0 while `wait_cnt != 0`.
 
 ## Sample output
 
