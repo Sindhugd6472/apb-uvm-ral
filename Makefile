@@ -9,9 +9,7 @@ VERILATOR   := verilator
 
 .PHONY: help sim run test lint clean cleanall
 
-.DEFAULT_GOAL := help
-
-.PHONY: help # Show available targets
+.PHONY: help
 help:
 	@echo "Targets:"
 	@echo "  make sim    - Build Verilator binary"
@@ -19,8 +17,6 @@ help:
 	@echo "  make test   - Explain UVM RAL simulator requirements"
 	@echo "  make lint   - Verilator lint-only (no build)"
 	@echo "  make clean  - Remove build artifacts"
-
-.PHONY: sim run test lint clean
 
 sim:
 	$(VERILATOR) --binary -j 0 -Wno-fatal -Itb -Irtl $(SIM_SOURCES)
