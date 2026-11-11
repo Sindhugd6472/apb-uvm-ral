@@ -16,10 +16,6 @@ Build:
 make sim
 ~~~
 
-Run basic SV test:
-~~~
-make run
-~~~
 Run the current self-checking SystemVerilog smoke test:
 ~~~bash
 make run
