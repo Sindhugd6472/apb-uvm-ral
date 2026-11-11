@@ -16,7 +16,7 @@ help:
 	@echo "Targets:"
 	@echo "  make sim    - Build Verilator binary"
 	@echo "  make run    - Run basic SV test"
-	@echo "  make test   - Run UVM reg_smoke_test"
+	@echo "  make test   - Explain UVM RAL simulator requirements"
 	@echo "  make lint   - Verilator lint-only (no build)"
 	@echo "  make clean  - Remove build artifacts"
 
@@ -28,8 +28,11 @@ sim:
 run: sim
 	$(EXE)
 
-test: sim
-	$(EXE) +UVM_TESTNAME=reg_smoke_test
+test:
+	@echo "UVM RAL test is not part of the Verilator tb_basic build."
+	@echo "Current automated smoke test: make run"
+	@echo "To run reg_smoke_test, integrate the UVM/RAL sources with a supported UVM simulator."
+	@exit 1
 
 # --lint-only lints without generating output files
 lint:
