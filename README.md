@@ -20,19 +20,24 @@ Run basic SV test:
 ~~~
 make run
 ~~~
-Run UVM test:
+Run the current self-checking SystemVerilog smoke test:
+~~~bash
+make run
 ~~~
-make test
-~~~
+
+**UVM RAL status:** The repository also contains UVM/RAL source files under `tb/uvm/` and `tb/ral/`, but the default Verilator build and CI currently compile and run `tb/tb_basic.sv` only. They do **not** execute the UVM RAL test. A separate supported UVM simulator flow is needed before claiming the RAL test passes.
 
 ## Features
 - APB3 slave RTL with wait-state insertion via `PREADY`.
 - Error response via `PSLVERR` for invalid addresses (asserted on completion).
-- Self-checking SystemVerilog tests running on Verilator.
+- Self-checking SystemVerilog smoke test running on Verilator.
+- Separate UVM/RAL implementation sources (not exercised by the current CI).
 
 ## What’s inside
 - `rtl/`: APB3 slave + register block
-- `tb/`: SystemVerilog testbench
+- `tb/tb_basic.sv`: Verilator smoke test
+- `tb/uvm/`: UVM verification components
+- `tb/ral/`: UVM register model and adapter
 
 ## Run (Verilator)
 
@@ -56,7 +61,7 @@ verilator --binary -j 0 -Wno-fatal -Itb -Irtl tb/tb_basic.sv tb/apb_if.sv rtl/ap
 Invalid address: `PSLVERR` asserts only on completion (`PSEL && PENABLE && PREADY`).  
 Wait states: during ACCESS, `PREADY` is 0 while `wait_cnt != 0`.
 
-## Sample output
+## Sample output (basic smoke test)
 
 ~~~text
 PASS: SCRATCH readback = deadbeef
